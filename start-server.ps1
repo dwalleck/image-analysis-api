@@ -1,0 +1,1 @@
+uvicorn mini_fastapi.main:app --reload
