@@ -1,3 +1,4 @@
+import io
 from typing import List
 from urllib.parse import urlparse
 
@@ -25,16 +26,10 @@ def is_url_valid(url: str) -> bool:
         return False
 
 
-def image_is_allowable_dimensions(raw_image: bytes) -> bool:
-    try:
-        image = Image.open(raw_image)
-        width, height = image.size
-        print(f"Image dimensions: {width} x {height}")
-        return width > 50 and height > 50
-    except Exception:
-        print("Something went bad")
-        # TODO: This should be an exception
-        return False
+def image_is_allowable_dimensions(image: Image) -> bool:
+    width, height = image.size
+    print(f"Image dimensions: {width} x {height}")
+    return width > 50 and height > 50
 
 
 def image_has_allowed_content_type(content_type: str) -> bool:
@@ -53,8 +48,8 @@ def validate_image_file(image_file: UploadFile) -> bool:
             detail=f"{image_file.content_type} is an invalid content type. Must be one of {allowed_image_types}",
         )
 
-    if not image_is_allowable_size(len(image_file.file.read())):
-        raise HTTPException(status_code=400, detail="Image must be smaller than 4 MB")
+    # if not image_is_allowable_size(len(image_file.file.read())):
+    #     raise HTTPException(status_code=400, detail="Image must be smaller than 4 MB")
 
     if not image_is_allowable_dimensions(Image.open(image_file.file)):
         raise HTTPException(
@@ -75,17 +70,22 @@ def validate_image_url(image_url: str) -> bool:
     except requests.exceptions.RequestException:
         raise HTTPException(
             status_code=400,
-            detail=f"An error occured downloading the file from {image_url}",
+            detail=f"An error occured accessing the image at {image_url}",
         )
 
-    if not image_is_allowable_dimensions(Image.open(response.raw)):
+    img_response = requests.get(image_url, stream=True)
+    image_bytes = img_response.content
+    image_data = io.BytesIO(image_bytes)
+    image = Image.open(image_data)
+
+    if not image_is_allowable_dimensions(image):
         raise HTTPException(
             status_code=400,
             detail=f"{image_url} does not meet the minimum dimensions of 50 x 50",
         )
 
     content_type: str = response.headers["Content-Type"]
-    if image_has_allowed_content_type(content_type):
+    if not image_has_allowed_content_type(content_type):
         raise HTTPException(
             status_code=400,
             detail=f"{content_type} is an invalid content type. Must be one of {allowed_image_types}",

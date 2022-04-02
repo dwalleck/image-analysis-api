@@ -1,3 +1,4 @@
+from email.mime import image
 import io
 from typing import List
 
@@ -15,8 +16,8 @@ from mini_fastapi.validators import validate_image_file, validate_image_url
 app = FastAPI()
 
 
-@app.post("/files/")
-async def create_file(
+@app.post("/images/")
+async def upload_image(
     file: UploadFile = File(default=None),
     label: str = Form(default=namesgenerator.get_random_name()),
     file_url: str = Form(default=None),
@@ -27,24 +28,24 @@ async def create_file(
         )
 
     if file is not None:
+        image_bytes = file.file.read()
         validate_image_file(file)
-        image_data = file.file
-    # else:
-    #     validate_image_url(file_url)
-    #     image_bytes = requests.get(file_url, stream=True).content
-    #     image_data = io.BytesIO(image_bytes)
-    # settings = get_settings()
-    # computervision_client = ComputerVisionClient(
-    #     settings.azure_cs_endpoint,
-    #     CognitiveServicesCredentials(settings.azure_cs_api_key),
-    # )
-    # analysis_response = computervision_client.analyze_image_in_stream(
-    #     image_data, [VisualFeatureTypes.tags]
-    # )
+    else:
+        validate_image_url(file_url)
+        image_bytes = requests.get(file_url, stream=True).content
+    image_data = io.BytesIO(image_bytes)
+
+    settings = get_settings()
+    computervision_client = ComputerVisionClient(
+        settings.azure_cs_endpoint,
+        CognitiveServicesCredentials(settings.azure_cs_api_key),
+    )
+    analysis_response = computervision_client.analyze_image_in_stream(
+        image_data, [VisualFeatureTypes.tags]
+    )
     return {
-        "file_size": len(file.file.read()),
-        "fileb_content_type": file.content_type,
-        # "tags": [tag.name for tag in analysis_response.tags if tag.confidence > 0.5],
+        "label": label,
+        "tags": [tag.name for tag in analysis_response.tags if tag.confidence > 0.5],
     }
 
 
