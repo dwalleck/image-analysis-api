@@ -24,7 +24,7 @@ from mini_fastapi.validators import (
 class AnalyzedImage(BaseModel):
     id: int
     label: str
-    tags: List[str]
+    objects: List[str]
 
 
 class AnalyzeImageRequest(BaseModel):
@@ -32,28 +32,23 @@ class AnalyzeImageRequest(BaseModel):
         default=namesgenerator.get_random_name(), min_length=1, max_length=50
     )
     analyze_image: bool = Field(default=False, title="If image analysis should be run")
-    image_url: str | None = Field(None, title="URL of the image to analyze")
-    base64_image_string: str | None = Field(
-        None, title="A base64 encoded image as a string"
-    )
+    image_url: str | None = Field(default=None, title="URL of the image to analyze")
+    image_data: str | None = Field(None, title="A base64 encoded image as a string")
 
     @root_validator
     def validate_image_url_or_base64_image_string(cls, values):
-        if (
-            values.get("image_url") is None
-            and values.get("base64_image_string") is None
-        ):
+        if values.get("image_url") is None and values.get("image_data") is None:
             raise HTTPException(
                 status_code=400,
-                detail="Must provide one of image_url or base64_image_string",
+                detail="Must provide one of image_url or image_data",
             )
 
         if (values.get("image_url") is not None) and (
-            values.get("base64_image_string") is not None
+            values.get("image_data") is not None
         ):
             raise HTTPException(
                 status_code=400,
-                detail="Cannot provide both image_url and base64_image_string",
+                detail="Cannot provide both image_url and image_data",
             )
         return values
 
@@ -79,7 +74,7 @@ class AnalyzeImageRequest(BaseModel):
                 detail=f"An error occured accessing the image at {image_url}",
             )
 
-        img_response = requests.get(image_url, stream=True)
+        img_response = requests.get(image_url)
         image_bytes = img_response.content
         image_data = io.BytesIO(image_bytes)
         image = Image.open(image_data)
@@ -96,7 +91,7 @@ class AnalyzeImageRequest(BaseModel):
                 detail=f"{content_type} is an invalid content type. Must be one of {allowed_image_types}",
             )
 
-        if not image_is_allowable_size(int(response.headers.get("content-length"))):
+        if not image_is_allowable_size(len(image_bytes)):
             raise HTTPException(
                 status_code=400, detail="Image must be smaller than 4 MB"
             )

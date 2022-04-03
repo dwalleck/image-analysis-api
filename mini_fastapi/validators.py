@@ -24,7 +24,6 @@ def is_url_valid(url: str) -> bool:
 
 def image_is_allowable_dimensions(image: Image) -> bool:
     width, height = image.size
-    print(f"Image dimensions: {width} x {height}")
     return width > 50 and height > 50
 
 

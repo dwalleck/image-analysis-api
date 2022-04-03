@@ -25,9 +25,9 @@ images: Table = Table(
     metadata,
     Column("id", Integer, primary_key=True),
     Column("label", String(50), nullable=False),
-    Column("image_blob_name", String),
+    Column("url", String),
     Column("analyze_image", Boolean),
-    Column("tags", ARRAY(String), nullable=True),
+    Column("objects", ARRAY(String)),
 )
 
 engine = create_engine(DATABASE_URL)
@@ -35,7 +35,8 @@ engine = create_engine(DATABASE_URL)
 metadata.create_all(engine)
 
 
-def get_image_by_id(image_id: uuid.UUID) -> List[dict]:
+# TODO Remove these functions
+def get_image_by_id(image_id: int) -> List[dict]:
     with database.transaction():
         result = database.fetch_all(
             "SELECT * FROM images WHERE id = $1",
