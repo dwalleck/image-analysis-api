@@ -1,3 +1,4 @@
+import base64
 from email.mime import image
 import io
 from typing import List
@@ -12,48 +13,37 @@ import uvicorn
 
 
 from mini_fastapi.config import get_settings
-from mini_fastapi.models import AnalyzedImage
-from mini_fastapi.validators import validate_image_file, validate_image_url
+from mini_fastapi.models import AnalyzeImageRequest
 from mini_fastapi.data_access import database, images
 
 app = FastAPI()
 
 
-@app.on_event("startup")
-async def startup():
-    await database.connect()
+# @app.on_event("startup")
+# async def startup():
+#     await database.connect()
 
 
-@app.on_event("shutdown")
-async def shutdown():
-    await database.disconnect()
+# @app.on_event("shutdown")
+# async def shutdown():
+#     await database.disconnect()
 
 
-@app.get("/images", response_model=List[AnalyzedImage])
-async def get_images():
-    query = images.select()
-    images_from_db = await database.fetch_all(query)
-    return images_from_db
+# @app.get("/images", response_model=List[AnalyzedImage])
+# async def get_images():
+#     query = images.select()
+#     images_from_db = await database.fetch_all(query)
+#     return images_from_db
 
 
 @app.post("/images")
-async def upload_image(
-    file: UploadFile = File(default=None),
-    label: str = Form(default=namesgenerator.get_random_name()),
-    file_url: str = Form(default=None),
-):
-    if file and file_url:
-        raise HTTPException(
-            status_code=400, detail="Please provide either a file or a url"
-        )
+async def upload_image(request: AnalyzeImageRequest):
 
-    if file is not None:
-        image_bytes = file.file.read()
-        validate_image_file(file)
+    if request.base64_image_string is not None:
+        image_data = io.BytesIO(base64.b64decode(request.base64_image_string))
     else:
-        validate_image_url(file_url)
-        image_bytes = requests.get(file_url, stream=True).content
-    image_data = io.BytesIO(image_bytes)
+        image_bytes = requests.get(request.image_url, stream=True).content
+        image_data = io.BytesIO(image_bytes)
 
     settings = get_settings()
     computervision_client = ComputerVisionClient(
@@ -64,7 +54,7 @@ async def upload_image(
         image_data, [VisualFeatureTypes.tags]
     )
     return {
-        "label": label,
+        "label": request.label,
         "tags": [tag.name for tag in analysis_response.tags if tag.confidence > 0.5],
     }
 
