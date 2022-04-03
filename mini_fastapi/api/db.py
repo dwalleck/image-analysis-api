@@ -12,7 +12,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ARRAY
 
-from mini_fastapi.config import get_config
+from mini_fastapi.api.config import get_config
 
 config = get_config()
 database = databases.Database(config.postgres_connection_string)

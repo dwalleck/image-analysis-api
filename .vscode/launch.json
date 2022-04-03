@@ -10,7 +10,7 @@
             "request": "launch",
             "module": "uvicorn",
             "args": [
-                "mini_fastapi.main:app"
+                "mini_fastapi.api.main:app"
             ],
             "jinja": true,
             "justMyCode": true

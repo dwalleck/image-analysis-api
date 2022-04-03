@@ -15,6 +15,9 @@ class ImageAnalysisConfig(BaseSettings):
         env_file = ".env"
 
 
+image_analysis_config = ImageAnalysisConfig()
+
+
 @lru_cache()
 def get_config() -> ImageAnalysisConfig:
-    return ImageAnalysisConfig()
+    return image_analysis_config

@@ -10,12 +10,12 @@ import requests
 from fastapi import Depends, FastAPI, HTTPException
 
 
-from mini_fastapi.config import ImageAnalysisConfig, get_config
-from mini_fastapi.images_repo import ImageRepository
+from mini_fastapi.api.config import ImageAnalysisConfig, get_config
+from mini_fastapi.api.images_repo import ImageRepository
 from mini_fastapi.services.image_analysis_service import ImageAnalysisService
 from mini_fastapi.services.image_storage_service import ImageStorageService
-from mini_fastapi.models import AnalyzeImageRequest, AnalyzedImage
-from mini_fastapi.db import database, images
+from mini_fastapi.api.models import AnalyzeImageRequest, AnalyzedImage
+from mini_fastapi.api.db import database, images
 
 app = FastAPI(
     title="Image Analysis API", description="Image Analysis API", version="1.0.0"
