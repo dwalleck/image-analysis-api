@@ -1,0 +1,2 @@
+- Add validation to form inputs
+- Add specific lengths to fields based on inputs in database

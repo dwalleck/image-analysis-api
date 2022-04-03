@@ -10,13 +10,33 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from msrest.authentication import CognitiveServicesCredentials
 import uvicorn
 
+
 from mini_fastapi.config import get_settings
+from mini_fastapi.models import AnalyzedImage
 from mini_fastapi.validators import validate_image_file, validate_image_url
+from mini_fastapi.data_access import database, images
 
 app = FastAPI()
 
 
-@app.post("/images/")
+@app.on_event("startup")
+async def startup():
+    await database.connect()
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
+
+
+@app.get("/images", response_model=List[AnalyzedImage])
+async def get_images():
+    query = images.select()
+    images_from_db = await database.fetch_all(query)
+    return images_from_db
+
+
+@app.post("/images")
 async def upload_image(
     file: UploadFile = File(default=None),
     label: str = Form(default=namesgenerator.get_random_name()),
