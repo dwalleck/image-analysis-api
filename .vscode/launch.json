@@ -10,7 +10,7 @@
             "request": "launch",
             "module": "uvicorn",
             "args": [
-                "mini_fastapi.api.main:app"
+                "image_analysis_api.api.main:app"
             ],
             "jinja": true,
             "justMyCode": true

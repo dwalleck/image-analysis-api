@@ -12,7 +12,7 @@ import requests
 from fastapi import HTTPException
 from PIL import Image
 
-from mini_fastapi.api.validators import (
+from image_analysis_api.api.validators import (
     image_has_allowed_content_type,
     image_is_allowable_dimensions,
     image_is_allowable_size,

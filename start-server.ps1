@@ -1,2 +1,2 @@
 .\venv\Scripts\Activate.ps1
-uvicorn mini_fastapi.api.main:app --reload
+uvicorn image_analysis_api.api.main:app --reload

@@ -1,7 +1,7 @@
 {
     "python.formatting.provider": "black",
     "python.testing.pytestArgs": [
-        "mini_fastapi"
+        "image_analysis_api"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true

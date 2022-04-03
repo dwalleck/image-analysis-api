@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from fastapi.testclient import TestClient
 import pytest
 
-from mini_fastapi.api.main import analyze_image, app
+from image_analysis_api.api.main import analyze_image, app
 
 
 @pytest.fixture
