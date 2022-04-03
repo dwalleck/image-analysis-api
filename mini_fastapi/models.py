@@ -24,6 +24,7 @@ from mini_fastapi.validators import (
 class AnalyzedImage(BaseModel):
     id: int
     label: str
+    url: str
     objects: List[str]
 
 
