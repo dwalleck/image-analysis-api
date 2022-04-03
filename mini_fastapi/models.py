@@ -1,9 +1,12 @@
+import uuid
 from fastapi import HTTPException
-from pydantic import BaseModel, root_validator, validator
+from pydantic import BaseModel, Field, root_validator, validator
 
 import io
 from typing import List
 from urllib.parse import urlparse
+import namesgenerator
+
 
 import requests
 from fastapi import HTTPException
@@ -18,11 +21,21 @@ from mini_fastapi.validators import (
 )
 
 
+class AnalyzedImage(BaseModel):
+    id: int
+    label: str
+    tags: List[str]
+
+
 class AnalyzeImageRequest(BaseModel):
-    label: str | None = None
-    run_image_analysis: bool | None = False
-    image_url: str | None = None
-    base64_image_string: str | None = None
+    label: str = Field(
+        default=namesgenerator.get_random_name(), min_length=1, max_length=50
+    )
+    analyze_image: bool = Field(default=False, title="If image analysis should be run")
+    image_url: str | None = Field(None, title="URL of the image to analyze")
+    base64_image_string: str | None = Field(
+        None, title="A base64 encoded image as a string"
+    )
 
     @root_validator
     def validate_image_url_or_base64_image_string(cls, values):

@@ -1,11 +1,8 @@
 from typing import List
 import uuid
 
-import sqlalchemy.dialects.postgresql
-
 import databases
 from sqlalchemy import (
-    LargeBinary,
     Table,
     Column,
     Boolean,
@@ -14,7 +11,7 @@ from sqlalchemy import (
     Integer,
     create_engine,
 )
-from sqlalchemy.dialects.postgresql import UUID, ARRAY, BYTEA
+from sqlalchemy.dialects.postgresql import ARRAY
 
 
 DATABASE_URL = "postgresql://images_user:password@localhost:5432/image_analysis"
@@ -27,11 +24,10 @@ images: Table = Table(
     "images",
     metadata,
     Column("id", Integer, primary_key=True),
-    Column("label", String, nullable=True),
-    Column("image_url", String, nullable=True),
-    Column("object_detection_enabled", Boolean),
+    Column("label", String(50), nullable=False),
+    Column("image_blob_name", String),
+    Column("analyze_image", Boolean),
     Column("tags", ARRAY(String), nullable=True),
-    Column("image_data", BYTEA),
 )
 
 engine = create_engine(DATABASE_URL)
