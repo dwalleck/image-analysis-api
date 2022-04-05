@@ -13,5 +13,7 @@ With a virtual environment enabled:
 
 ```
 pip install -r requirements.txt
+cp .env.template .env
+<fill in .env with the required values>
 uvicorn image_analysis_api.api.main:app
 ```
