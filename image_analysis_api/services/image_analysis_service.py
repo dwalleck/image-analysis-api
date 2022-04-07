@@ -13,14 +13,14 @@ class ImageAnalysisService:
         self.api_key = api_key
 
     def detect_objects(
-        self, image_data: BytesIO, acceptable_confidence_score: Decimal
+        self, image_data: bytes, acceptable_confidence_score: Decimal
     ) -> List[str]:
         computervision_client = ComputerVisionClient(
             endpoint=self.endpoint,
             credentials=CognitiveServicesCredentials(self.api_key),
         )
         analysis_response = computervision_client.analyze_image_in_stream(
-            image_data, [VisualFeatureTypes.objects]
+            BytesIO(image_data), [VisualFeatureTypes.objects]
         )
 
         objects = [
