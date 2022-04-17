@@ -53,10 +53,9 @@ async def analyze_image(
     request: AnalyzeImageRequest, config: ImageAnalysisConfig = Depends(get_config)
 ):
     if request.image_data is not None:
-        image_data = BytesIO(base64.b64decode(request.image_data))
+        image_bytes = base64.b64decode(request.image_data)
     else:
-        image_bytes = requests.get(request.image_url, stream=True).content
-        image_data = BytesIO(image_bytes)
+        image_bytes = requests.get(request.image_url).content
 
     if request.analyze_image:
         image_analysis_service = ImageAnalysisService(
@@ -64,14 +63,14 @@ async def analyze_image(
         )
 
         objects = image_analysis_service.detect_objects(
-            image_data, Decimal(config.acceptable_confidence_score)
+            image_bytes, Decimal(config.acceptable_confidence_score)
         )
     else:
         objects = []
 
-    image_blob_name = get_image_name(image_data)
+    image_blob_name = get_image_name(BytesIO(image_bytes))
     image_service = ImageStorageService(config.azure_storage_connection_string)
-    url = image_service.upload_image(image_blob_name, image_data)
+    url = image_service.upload_image(image_blob_name, image_bytes)
 
     image_repo = ImageRepository(images, database)
     image_id = await image_repo.create_image(
